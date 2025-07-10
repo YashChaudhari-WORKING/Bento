@@ -1,11 +1,12 @@
-import User from "../../models/User.js";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-import { signupSchema } from "../../validators/auth.validators.js";
+require("dotenv").config();
 
-export const signupController = async (req, res) => {
+const User = require("../../models/User");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const { signupSchema } = require("../../validators/auth.validators");
+const signupController = async (req, res) => {
   try {
-    const parsed = signupSchema.safeParse(req.body);
+    const parsed = signupSchema.safeParse(req.body || {});
 
     if (!parsed.success) {
       const flatErrors = parsed.error.flatten();
@@ -64,3 +65,4 @@ export const signupController = async (req, res) => {
     });
   }
 };
+module.exports = { signupController };

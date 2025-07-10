@@ -1,4 +1,4 @@
-import { z } from "zod";
+const { z } = require("zod");
 
 exports.signupSchema = z.object({
   name: z.string().min(1, "Name is Required"),
@@ -18,4 +18,10 @@ exports.signupSchema = z.object({
     .refine((val) => /[!@#$%^&*(),.?":{}|<>]/.test(val), {
       message: "Password must contain at least one special character",
     }),
+});
+exports.loginSchema = z.object({
+  email: z
+    .string({ required_error: "Email is required" })
+    .email("Invalid email address"),
+  password: z.string({ required_error: "Password is required" }),
 });
