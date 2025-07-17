@@ -1,5 +1,5 @@
-import mongoose, { Schema } from "mongoose";
-
+const mongoose = require("mongoose");
+const { Schema } = mongoose;
 const workspaceSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
@@ -11,5 +11,6 @@ const workspaceSchema = new mongoose.Schema(
   }
 );
 
-export default mongoose.models.workspaceSchema ||
-  mongoose.model("WorkSpace", workspaceSchema);
+const Workspace = mongoose.model("Workspace", workspaceSchema);
+
+module.exports = Workspace;

@@ -1,4 +1,5 @@
-import mongoose, { Schema } from "mongoose";
+const mongoose = require("mongoose");
+const { Schema } = mongoose;
 
 const MembershipSchema = new mongoose.Schema(
   {
@@ -15,10 +16,10 @@ const MembershipSchema = new mongoose.Schema(
       default: "member",
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
+
+// Prevent duplicate user-workspace entries
 MembershipSchema.index({ userId: 1, workspaceId: 1 }, { unique: true });
 
 module.exports = mongoose.model("Membership", MembershipSchema);

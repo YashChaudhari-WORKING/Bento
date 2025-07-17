@@ -25,3 +25,13 @@ exports.loginSchema = z.object({
     .email("Invalid email address"),
   password: z.string({ required_error: "Password is required" }),
 });
+exports.workSpaceSchema = z.object({
+  name: z.string().min(1, "WorkSpace Name Is required"),
+  slug: z
+    .string()
+    .min(1, "Workspace Slug is required")
+    .regex(
+      /^[a-z0-9]+(-[a-z0-9]+)*$/,
+      "Slug must be lowercase, alphanumeric, and can include hyphens (e.g. dev-team)"
+    ),
+});
