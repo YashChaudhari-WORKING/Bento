@@ -1,40 +1,71 @@
+// redux/features/auth/authSlice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { AuthState } from "./authTypes";
-import { login, signup } from "./authThunks";
-const initalState: AuthState = {
+import { AuthState, Workspace } from "./authTypes";
+import { login, signup, authCheck, logout } from "./authThunks";
+
+const initialState: AuthState = {
   user: null,
+  memberships: [],
+  currentWorkspace: null,
   isAuthenticated: false,
   error: null,
   loading: false,
+  initialized: false,
 };
 
 const authSlice = createSlice({
   name: "auth",
-  initialState: initalState,
-  reducers: {},
+  initialState,
+  reducers: {
+    setCurrentWorkspace: (state, action: PayloadAction<Workspace>) => {
+      state.currentWorkspace = action.payload;
+    },
+    clearAuth: (state) => {
+      Object.assign(state, initialState);
+    },
+  },
   extraReducers: (builder) => {
-    const handleLoading = (state: AuthState) => {
-      state.loading = true;
-      state.error = null;
-    };
-    const handleFulFilled = (state: AuthState, action: { payload: any }) => {
-      state.user = action.payload;
-      state.loading = false;
-      state.isAuthenticated = true;
-    };
-    const handleRejected = (state: AuthState, action: { payload: any }) => {
-      state.error = action.payload;
-      state.loading = false;
-    };
-
     builder
-      .addCase(login.pending, handleLoading)
-      .addCase(login.fulfilled, handleFulFilled)
-      .addCase(login.rejected, handleRejected)
+      // Auth Check
+      .addCase(authCheck.pending, (state) => {
+        if (!state.initialized) state.loading = true;
+        state.error = null;
+      })
+      .addCase(authCheck.fulfilled, (state, action) => {
+        state.user = action.payload.user;
+        state.memberships = action.payload.memberships;
+        state.isAuthenticated = true;
+        state.loading = false;
+        state.initialized = true;
+      })
+      .addCase(authCheck.rejected, (state, action) => {
+        state.error = action.payload;
+        state.loading = false;
+        state.initialized = true;
+        state.isAuthenticated = false;
+      })
 
-      .addCase(signup.pending, handleLoading)
-      .addCase(signup.fulfilled, handleFulFilled)
-      .addCase(signup.rejected, handleRejected);
+      // Login
+      .addCase(login.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(login.fulfilled, (state, action) => {
+        state.user = action.payload;
+        state.isAuthenticated = true;
+        state.loading = false;
+      })
+      .addCase(login.rejected, (state, action) => {
+        state.error = action.payload;
+        state.loading = false;
+      })
+
+      // Logout
+      .addCase(logout.fulfilled, (state) => {
+        Object.assign(state, initialState, { initialized: true });
+      });
   },
 });
+
+export const { setCurrentWorkspace, clearAuth } = authSlice.actions;
 export default authSlice.reducer;

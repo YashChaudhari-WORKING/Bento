@@ -28,17 +28,26 @@ export const signup = createAsyncThunk<
   }
 });
 
-export const me = createAsyncThunk<User, void, { rejectValue: string }>(
-  "/auth/me",
-  async (_, { rejectWithValue }) => {
-    try {
-      const res = await instance.post("/auth/me");
-      return res.data.user;
-    } catch (error: any) {
-      return rejectWithValue(error?.response?.data?.msg || "Auth Check Failed");
+export const authCheck = createAsyncThunk<
+  { user: User; memberships: any[] },
+  void,
+  { rejectValue: string }
+>("auth/me", async (_, { rejectWithValue }) => {
+  try {
+    const res = await instance.get("/auth/me");
+    return {
+      user: res.data.user,
+      memberships: res.data.memberships,
+    };
+  } catch (error: any) {
+    // Don't treat 401/403 as errors - user just isn't logged in
+    if (error?.response?.status === 401 || error?.response?.status === 403) {
+      return rejectWithValue("UNAUTHORIZED");
     }
+    return rejectWithValue(error?.response?.data?.msg || "Auth Check Failed");
   }
-);
+});
+
 export const logout = createAsyncThunk<void, void, { rejectValue: string }>(
   "/auth/logout",
   async (_, { rejectWithValue }) => {

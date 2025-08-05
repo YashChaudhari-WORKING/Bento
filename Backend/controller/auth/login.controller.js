@@ -2,6 +2,8 @@ const { loginSchema } = require("../../validators/auth.validators");
 const User = require("../../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+
+// user login route
 const loginController = async (req, res) => {
   try {
     const parsed = loginSchema.safeParse(req.body || {});
