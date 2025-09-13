@@ -11,6 +11,7 @@ import {
 } from "@/validation/schema/auth/loginSchema";
 import { useDispatch, useSelector } from "react-redux";
 import { login, authCheck } from "@/redux/features/auth/authThunks";
+import { setWorkspacesFromAuth } from "@/redux/features/workspace/workspaceSlice"; // ADD THIS IMPORT
 import { RootState, AppDispatch } from "@/redux/store";
 
 const LoginForm = () => {
@@ -36,6 +37,7 @@ const LoginForm = () => {
       </div>
     );
   }
+
   const onSubmit = async (data: LoginFormData) => {
     try {
       console.log("hello");
@@ -44,6 +46,9 @@ const LoginForm = () => {
 
       // After login, get full user data
       const authResult = await dispatch(authCheck()).unwrap();
+
+      // STORE WORKSPACE DATA IN WORKSPACE SLICE
+      dispatch(setWorkspacesFromAuth(authResult.memberships));
 
       // Redirect to first available workspace/team
       if (authResult.memberships?.length > 0) {
@@ -62,6 +67,7 @@ const LoginForm = () => {
     }
   };
 
+  // Rest of your component remains the same...
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="max-w-md w-full space-y-8 p-8">

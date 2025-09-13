@@ -30,6 +30,6 @@ export interface AuthState {
   currentWorkspace: Workspace | null;
   isAuthenticated: boolean;
   loading: boolean;
-  error: string | null;
+  error: string | null | undefined;
   initialized: boolean;
 }

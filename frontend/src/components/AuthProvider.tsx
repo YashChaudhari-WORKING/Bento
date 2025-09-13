@@ -4,6 +4,7 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { authCheck } from "@/redux/features/auth/authThunks";
+import { setWorkspacesFromAuth } from "@/redux/features/workspace/workspaceSlice"; // ADD THIS IMPORT
 import { AppDispatch, RootState } from "@/redux/store";
 import LoadingSpinner from "./LoadingSpinner";
 
@@ -20,7 +21,12 @@ export default function AuthProvider({
   useEffect(() => {
     // Only check auth on client-side if not initialized
     if (!initialized) {
-      dispatch(authCheck());
+      dispatch(authCheck()).then((result) => {
+        // DISPATCH WORKSPACE DATA AFTER SUCCESSFUL AUTH CHECK
+        if (authCheck.fulfilled.match(result)) {
+          dispatch(setWorkspacesFromAuth(result.payload.memberships));
+        }
+      });
     }
   }, [dispatch, initialized]);
 

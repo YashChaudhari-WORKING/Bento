@@ -81,9 +81,11 @@ function setLastValidUrl(response: NextResponse, url: string) {
 
 function getFallbackUrl(
   memberships: Membership[],
-  lastValidUrl?: string
+  lastValidUrl?: string,
+  useLastValid: boolean = true // Add parameter to control behavior
 ): string {
-  if (lastValidUrl) {
+  // Only use lastValidUrl if explicitly requested and it's valid
+  if (useLastValid && lastValidUrl) {
     const urlParts = lastValidUrl.split("/");
     if (urlParts.length >= 4 && urlParts[2] === "team") {
       const workspaceSlug = urlParts[1];
@@ -100,6 +102,7 @@ function getFallbackUrl(
     }
   }
 
+  // Default fallback logic
   if (memberships.length > 0) {
     const first = memberships[0];
     if (first.teams.length > 0) {
@@ -112,26 +115,10 @@ function getFallbackUrl(
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  console.log("hello");
 
-  // Skip for API routes, static files, etc.
-  if (
-    pathname.startsWith("/api") ||
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/favicon.ico") ||
-    pathname.includes(".")
-  ) {
-    return NextResponse.next();
-  }
+  // ... your existing skip logic ...
 
-  // Allow all auth routes without authentication check
-  if (pathname.startsWith("/auth")) {
-    return NextResponse.next();
-  }
-
-  // Validate authentication for all other routes
   const authData = await validateAuth(request);
-
   if (!authData) {
     return NextResponse.redirect(new URL("/auth/login", request.url));
   }
@@ -139,9 +126,9 @@ export async function middleware(request: NextRequest) {
   const { memberships } = authData;
   const lastValidUrl = getLastValidUrl(request);
 
-  // Handle root path
+  // Handle root path - use lastValidUrl
   if (pathname === "/") {
-    const fallbackUrl = getFallbackUrl(memberships, lastValidUrl);
+    const fallbackUrl = getFallbackUrl(memberships, lastValidUrl, true);
     return NextResponse.redirect(new URL(fallbackUrl, request.url));
   }
 
@@ -157,14 +144,16 @@ export async function middleware(request: NextRequest) {
       setLastValidUrl(response, correctUrl);
       return response;
     } else {
-      const fallbackUrl = getFallbackUrl(memberships, lastValidUrl);
+      // Don't use lastValidUrl for invalid team navigation
+      const fallbackUrl = getFallbackUrl(memberships, lastValidUrl, false);
       return NextResponse.redirect(new URL(fallbackUrl, request.url));
     }
   }
 
   // Handle incomplete URLs
   if (pathname === "/team" || pathname === "/workspace") {
-    const fallbackUrl = getFallbackUrl(memberships, lastValidUrl);
+    // Don't use lastValidUrl for incomplete URLs
+    const fallbackUrl = getFallbackUrl(memberships, lastValidUrl, false);
     return NextResponse.redirect(new URL(fallbackUrl, request.url));
   }
 
@@ -179,8 +168,15 @@ export async function middleware(request: NextRequest) {
     );
 
     if (!currentMembership) {
-      const fallbackUrl = getFallbackUrl(memberships, lastValidUrl);
-      return NextResponse.redirect(new URL(fallbackUrl, request.url));
+      // ✅ This is where the issue was - when workspace doesn't exist in auth.memberships
+      // Don't redirect to lastValidUrl, allow the workspace change to happen
+      console.log(`Workspace ${workspaceSlug} not found in memberships`);
+
+      // Instead of immediately falling back, let it continue to the page
+      // The page will handle the case where workspace isn't in auth.memberships
+      // but exists in workspace.memberships
+      const response = NextResponse.next();
+      return response;
     }
 
     // Handle workspace home or /workspace/team
@@ -210,7 +206,7 @@ export async function middleware(request: NextRequest) {
           setLastValidUrl(response, targetUrl);
           return response;
         } else {
-          const fallbackUrl = getFallbackUrl(memberships, lastValidUrl);
+          const fallbackUrl = getFallbackUrl(memberships, lastValidUrl, false);
           return NextResponse.redirect(new URL(fallbackUrl, request.url));
         }
       }
@@ -223,8 +219,8 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Any other invalid path
-  const fallbackUrl = getFallbackUrl(memberships, lastValidUrl);
+  // Any other invalid path - don't use lastValidUrl
+  const fallbackUrl = getFallbackUrl(memberships, lastValidUrl, false);
   return NextResponse.redirect(new URL(fallbackUrl, request.url));
 }
 

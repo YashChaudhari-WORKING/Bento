@@ -1,22 +1,9 @@
-export interface Team {
-  _id: string;
-  name: string;
-  slug: string;
-  role: string;
-}
-export interface Memberships {
-  workspace: {
-    _id: string;
-    name: string;
-    slug: string;
-  };
-  role: string;
-  teams: Team[];
-}
-export interface workspaceState {
-  memberships: Memberships[];
-  currentWorkspaceId: string | null;
+import { Workspace, Membership } from "../auth/authTypes";
+
+export interface WorkspaceState {
+  workspaces: Workspace[];
+  currentWorkspace: Workspace | null;
+  memberships: Membership[];
   loading: boolean;
   error: string | null;
-  isInitialized: boolean;
 }

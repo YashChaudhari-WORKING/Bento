@@ -90,4 +90,44 @@ const createWorkSpace = async (req, res) => {
     });
   }
 };
-module.exports = { createWorkSpace };
+
+const workspaceValid = async (req, res) => {
+  try {
+    // 1. Validate the input from the request body
+    const parsed = workSpaceSchema.safeParse(req.body || {});
+    if (!parsed.success) {
+      const flatErrors = parsed.error.flatten();
+      return res.status(400).json({
+        success: false,
+        msg: "Validation error",
+        error: flatErrors.fieldErrors,
+      });
+    }
+    const { slug } = parsed.data;
+
+    // 2. Check if a workspace with the same slug already exists
+    const existingSlug = await Workspace.findOne({ slug });
+    if (existingSlug) {
+      return res.status(409).json({
+        success: false,
+        // Improved error message for clarity
+        msg: "This workspace URL is already taken.",
+      });
+    }
+
+    // 3. Send a success response if the slug is available
+    return res.status(200).json({
+      success: true,
+      msg: "This workspace URL is available.",
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      msg: "An unexpected error occurred on the server.",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};
+
+module.exports = { createWorkSpace, workspaceValid };

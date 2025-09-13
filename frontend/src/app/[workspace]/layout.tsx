@@ -5,10 +5,11 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "next/navigation";
 import { AppDispatch, RootState } from "@/redux/store";
-import { setCurrentWorkspace } from "@/redux/features/auth/authSlice";
+import { setCurrentWorkspace } from "@/redux/features/workspace/workspaceSlice";
 import { closeSidebar } from "@/redux/features/layout/sidebarSlice";
 import AuthProvider from "@/components/AuthProvider";
 import InnovativeSidebar from "@/components/layout/InnovativeSidebar";
+import { useMemberships } from "@/hooks/useMemberships";
 
 export default function WorkspaceLayout({
   children,
@@ -16,23 +17,26 @@ export default function WorkspaceLayout({
   children: React.ReactNode;
 }) {
   const dispatch = useDispatch<AppDispatch>();
-  const { memberships, initialized } = useSelector(
-    (state: RootState) => state.auth
-  );
+  const { findMembershipBySlug, initialized } = useMemberships();
   const { isOpen, isPinned } = useSelector((state: RootState) => state.sidebar);
   const params = useParams();
   const workspaceSlug = params.workspace as string;
 
   useEffect(() => {
-    if (initialized && memberships.length > 0 && workspaceSlug) {
-      const currentMembership = memberships.find(
-        (m) => m.workspace.slug === workspaceSlug
-      );
+    if (!initialized || !workspaceSlug) return;
+
+    try {
+      const currentMembership = findMembershipBySlug(workspaceSlug);
+
       if (currentMembership) {
         dispatch(setCurrentWorkspace(currentMembership.workspace));
+      } else {
+        console.warn(`No membership found for workspace: ${workspaceSlug}`);
       }
+    } catch (error) {
+      console.error("Error setting current workspace:", error);
     }
-  }, [dispatch, memberships, workspaceSlug, initialized]);
+  }, [dispatch, findMembershipBySlug, workspaceSlug, initialized]);
 
   return (
     <AuthProvider>

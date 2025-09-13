@@ -61,6 +61,9 @@ const authSlice = createSlice({
       })
 
       // Logout
+      .addCase(logout.pending, (state) => {
+        state.loading = true;
+      })
       .addCase(logout.fulfilled, (state) => {
         Object.assign(state, initialState, { initialized: true });
       });
