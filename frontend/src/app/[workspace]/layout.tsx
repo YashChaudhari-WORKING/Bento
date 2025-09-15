@@ -54,7 +54,7 @@ export default function WorkspaceLayout({
         {/* Main content area */}
         <div
           className={`transition-all duration-300 ${
-            isPinned ? "md:ml-72" : "ml-0"
+            isPinned ? "md:ml-64" : "ml-0"
           }`}
         >
           <main className="min-h-screen">{children}</main>

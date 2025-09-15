@@ -10,6 +10,7 @@ import {
 } from "@/redux/features/layout/sidebarSlice";
 import { Menu, X, Zap, Target } from "lucide-react";
 import WorkspaceDropdown from "../sidebar/MainDropdown";
+import TeamDrawer from "../sidebar/TeamDrawer";
 
 const InnovativeSidebar = () => {
   const dispatch = useDispatch();
@@ -111,7 +112,7 @@ const InnovativeSidebar = () => {
       {/* Sidebar */}
       <div
         ref={sidebarRef}
-        className={`fixed left-0 top-0 h-full w-72 bg-[#090909] text-white transition-transform duration-300 z-40 shadow-2xl ${
+        className={`fixed left-0 top-0 h-full w-64 bg-[#090909] text-white transition-transform duration-300 z-40 shadow-2xl ${
           isMobile
             ? isOpen
               ? "translate-x-0"
@@ -148,6 +149,8 @@ const InnovativeSidebar = () => {
             </button>
           )}
         </div>
+
+        <TeamDrawer />
       </div>
     </>
   );

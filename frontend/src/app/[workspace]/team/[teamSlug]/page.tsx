@@ -23,8 +23,6 @@ export default function TeamPage() {
   const { allMemberships, findMembershipBySlug, findMembershipById } =
     useMemberships();
 
-  console.log(user);
-
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [navigationError, setNavigationError] = useState<string | null>(null);
 
