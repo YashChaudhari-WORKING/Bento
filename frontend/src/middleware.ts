@@ -116,11 +116,15 @@ function getFallbackUrl(
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // ... your existing skip logic ...
-
   const authData = await validateAuth(request);
   if (!authData) {
     return NextResponse.redirect(new URL("/auth/login", request.url));
+  }
+
+  if (pathname.includes("/settings")) {
+    const response = NextResponse.next();
+    response.headers.set("x-user-data", JSON.stringify(authData));
+    return response;
   }
 
   const { memberships } = authData;
@@ -187,6 +191,13 @@ export async function middleware(request: NextRequest) {
         setLastValidUrl(response, targetUrl);
         return response;
       }
+    }
+
+    if (subPath.startsWith("settings")) {
+      // Allow settings routes to pass through
+      const response = NextResponse.next();
+      response.headers.set("x-user-data", JSON.stringify(authData));
+      return response;
     }
 
     // Handle /workspace/team/teamslug

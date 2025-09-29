@@ -16,6 +16,7 @@ const teamMenu = [
 const TeamDrawer: React.FC = () => {
   const teams = useSelector(selectCurrentWorkspaceTeams);
   const [openTeams, setOpenTeams] = useState<string[]>([]);
+  const [showTeams, setShowTeams] = useState<boolean>(true);
 
   const toggleTeam = (id: string) => {
     setOpenTeams((prev) =>
@@ -24,82 +25,89 @@ const TeamDrawer: React.FC = () => {
   };
 
   return (
-    <div className=" text-white p-3 text-sm">
+    <div className="text-white p-3 text-[13px]">
       {/* Header */}
-      <p className="text-[#636466] flex items-center gap-1 mb-2 font-medium text-sm">
+      <div
+        onClick={() => setShowTeams(!showTeams)}
+        className="text-gray-400 hover:bg-[#151619] flex items-center gap-2 mb-2 p-1 font-medium cursor-pointer rounded"
+      >
         Your teams
-        <Image
-          src="/icon/filled-down-arrow.png"
-          alt="arrow"
-          width={10}
-          height={10}
-          className="opacity-70"
+        <ChevronDown
+          size={16}
+          className={`opacity-70 transition-transform duration-200 ${
+            showTeams ? "rotate-0" : "-rotate-90"
+          }`}
         />
-      </p>
+      </div>
 
       {/* Team List */}
-      <div className="space-y-2">
-        {teams.map((team) => {
-          const isOpen = openTeams.includes(team._id);
+      {showTeams && (
+        <div className="space-y-2">
+          {teams.map((team) => {
+            const isOpen = openTeams.includes(team._id);
 
-          // Generate deterministic color
-          const badgeColor = stringToColor(team.slug || team.name);
+            // Generate deterministic color
+            const badgeColor = stringToColor(team.slug || team.name);
+            const textColor =
+              getLuminance(badgeColor) > 0.5 ? "#000000" : "#FFFFFF";
 
-          // Auto pick white or black text based on brightness
-          const textColor =
-            getLuminance(badgeColor) > 0.5 ? "#000000" : "#FFFFFF";
-
-          return (
-            <div key={team._id}>
-              {/* Team Header */}
-              <button
-                onClick={() => toggleTeam(team._id)}
-                className="flex w-full items-center justify-between cursor-pointer px-2 py-1 hover:bg-[#151619] rounded transition-colors"
-              >
-                {/* Left side: badge + name */}
-                <div className="flex items-center gap-2">
-                  <div
-                    className="w-7 h-7 rounded-[5px] flex items-center justify-center text-[18px] font-bold shadow"
-                    style={{
-                      backgroundColor: badgeColor,
-                      color: textColor,
-                    }}
-                  >
-                    {team.slug[0].toUpperCase()}
-                  </div>
-                  <span className="font-medium capitalize">{team.name}</span>
-                  {isOpen ? (
-                    <ChevronDown size={16} />
-                  ) : (
-                    <ChevronRight size={16} />
-                  )}
-                </div>
-              </button>
-
-              {/* Team Items */}
-              {isOpen && (
-                <div className="ml-8 mt-1 space-y-1">
-                  {teamMenu.map((item) => (
+            return (
+              <div key={team._id}>
+                {/* Team Header */}
+                <button
+                  onClick={() => toggleTeam(team._id)}
+                  className="flex w-full items-center justify-between cursor-pointer px-2 py-1 hover:bg-[#151619] rounded transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    {/* Badge */}
                     <div
-                      key={item.id}
-                      className="flex items-center gap-2 px-2 py-1 hover:bg-[#151619] rounded cursor-pointer transition-colors"
+                      className="w-6 h-6 rounded flex items-center justify-center font-bold text-[13px] shadow"
+                      style={{ backgroundColor: badgeColor, color: textColor }}
                     >
-                      <Image
-                        src={item.icon}
-                        alt={item.label}
-                        width={100}
-                        height={100}
-                        className="opacity-80 w-4 h-4"
-                      />
-                      <span className="text-[#ffffff]">{item.label}</span>
+                      {team.slug[0].toUpperCase()}
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+
+                    {/* Team Name */}
+                    <span className="font-medium text-[13px] capitalize">
+                      {team.name}
+                    </span>
+
+                    {/* Arrow */}
+                    {isOpen ? (
+                      <ChevronDown size={16} />
+                    ) : (
+                      <ChevronRight size={16} />
+                    )}
+                  </div>
+                </button>
+
+                {/* Team Items */}
+                {isOpen && (
+                  <div className="ml-8 mt-1 space-y-1">
+                    {teamMenu.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex items-center gap-2 px-2 py-1 hover:bg-[#151619] rounded cursor-pointer transition-colors"
+                      >
+                        <Image
+                          src={item.icon}
+                          alt={item.label}
+                          width={16}
+                          height={16}
+                          className="opacity-80"
+                        />
+                        <span className="text-[13px] text-white">
+                          {item.label}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

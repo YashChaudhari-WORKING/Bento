@@ -3,12 +3,12 @@
 
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { AppDispatch, RootState } from "@/redux/store";
 import { setCurrentWorkspace } from "@/redux/features/workspace/workspaceSlice";
 import { closeSidebar } from "@/redux/features/layout/sidebarSlice";
 import AuthProvider from "@/components/AuthProvider";
-import InnovativeSidebar from "@/components/layout/InnovativeSidebar";
+import Sidebar from "@/components/layout/Sidebar";
 import { useMemberships } from "@/hooks/useMemberships";
 
 export default function WorkspaceLayout({
@@ -20,10 +20,19 @@ export default function WorkspaceLayout({
   const { findMembershipBySlug, initialized } = useMemberships();
   const { isOpen, isPinned } = useSelector((state: RootState) => state.sidebar);
   const params = useParams();
+  const pathname = usePathname();
   const workspaceSlug = params.workspace as string;
+  const isSettingsPage = pathname.includes("/settings");
 
   useEffect(() => {
-    if (!initialized || !workspaceSlug) return;
+    if (
+      !initialized ||
+      !workspaceSlug ||
+      workspaceSlug.startsWith(".") ||
+      workspaceSlug.includes("well-known")
+    ) {
+      return;
+    }
 
     try {
       const currentMembership = findMembershipBySlug(workspaceSlug);
@@ -38,10 +47,19 @@ export default function WorkspaceLayout({
     }
   }, [dispatch, findMembershipBySlug, workspaceSlug, initialized]);
 
+  // Don't render layout for system routes
+  if (
+    !workspaceSlug ||
+    workspaceSlug.startsWith(".") ||
+    workspaceSlug.includes("well-known")
+  ) {
+    return null;
+  }
+
   return (
     <AuthProvider>
       <div className="relative min-h-screen">
-        <InnovativeSidebar />
+        <Sidebar menuType={isSettingsPage ? "settings" : "default"} />
 
         {/* Overlay for mobile when sidebar is open */}
         {isOpen && (

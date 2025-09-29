@@ -6,7 +6,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { useMemberships } from "@/hooks/useMemberships";
 import { setCurrentWorkspace } from "@/redux/features/auth/authSlice";
 import type { AppDispatch } from "@/redux/store";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { ChevronDown, ChevronsRight, Check, Plus } from "lucide-react";
 import { logout } from "@/redux/features/auth/authThunks";
 
@@ -128,6 +128,15 @@ const WorkspaceDropdown: React.FC = () => {
                 </div>
               </div>
             )}
+          </div>
+
+          <div
+            onClick={() => {
+              router.push(`/${currentWorkspace?.slug}/settings`);
+            }}
+            className="px-2 py-1.5 rounded-md hover:bg-[#3A3B3C] cursor-pointer"
+          >
+            Settings
           </div>
 
           <hr className="border-t border-[#3b3d3f] my-1.5" />

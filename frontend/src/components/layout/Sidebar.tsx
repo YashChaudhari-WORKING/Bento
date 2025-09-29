@@ -8,19 +8,31 @@ import {
   setActiveItem,
   setSeenHint,
 } from "@/redux/features/layout/sidebarSlice";
-import { Menu, X, Zap, Target } from "lucide-react";
+import { Menu, X, Zap, Target, ChevronLeft, Plus } from "lucide-react";
 import WorkspaceDropdown from "../sidebar/MainDropdown";
 import TeamDrawer from "../sidebar/TeamDrawer";
+import { useRouter } from "next/navigation";
+import { selectCurrentWorkspaceTeams } from "@/redux/features/workspace/workspaceSelectors";
 
-const InnovativeSidebar = () => {
+import { getLuminance } from "polished";
+import stc from "string-to-color";
+interface sidebarProps {
+  menuType?: "default" | "settings";
+}
+
+const Sidebar: React.FC<sidebarProps> = ({ menuType }) => {
   const dispatch = useDispatch();
   const isOpen = useSelector((state: RootState) => state.sidebar.isOpen);
   const isPinned = useSelector((state: RootState) => state.sidebar.isPinned);
-
+  const router = useRouter();
   const [hoverZone, setHoverZone] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const hoverTimeout = useRef<NodeJS.Timeout | null>(null);
+  const teams = useSelector(selectCurrentWorkspaceTeams);
+  const { currentWorkspace, workspaces } = useSelector(
+    (state: RootState) => state.workspace
+  );
 
   const checkMobile = () => setIsMobile(window.innerWidth < 768);
 
@@ -112,7 +124,7 @@ const InnovativeSidebar = () => {
       {/* Sidebar */}
       <div
         ref={sidebarRef}
-        className={`fixed left-0 top-0 h-full w-64 bg-[#090909] text-white transition-transform duration-300 z-40 shadow-2xl ${
+        className={`fixed border-r-1 border-[#565758] left-0 top-0 h-full w-64 bg-[#090909] text-white transition-transform duration-300 z-40 shadow-2xl ${
           isMobile
             ? isOpen
               ? "translate-x-0"
@@ -122,38 +134,100 @@ const InnovativeSidebar = () => {
             : "-translate-x-full"
         }`}
       >
-        {/* Header */}
-        <div className="p-4 flex items-center justify-between border-b border-slate-700">
-          <div className="flex items-center space-x-2">
-            <WorkspaceDropdown />
-          </div>
-          {!isMobile && (
-            <button
-              onClick={() => dispatch(togglePin())}
-              className={`p-1 rounded transition-colors ${
-                isPinned
-                  ? "text-blue-400 bg-blue-500/20"
-                  : "text-slate-400 hover:text-blue-400"
-              }`}
-              title={isPinned ? "Unpin sidebar" : "Pin sidebar"}
-            >
-              <Target className="w-4 h-4" />
-            </button>
-          )}
-          {isMobile && (
-            <button
-              onClick={() => dispatch(closeSidebar())}
-              className="text-slate-400 hover:text-white p-1 rounded"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          )}
-        </div>
+        {menuType === "default" ? (
+          <div>
+            {/* Header */}
+            <div className="p-4 flex items-center justify-between border-b border-slate-700">
+              <div className="flex items-center space-x-2">
+                <WorkspaceDropdown />
+              </div>
+              {!isMobile && (
+                <button
+                  onClick={() => dispatch(togglePin())}
+                  className={`p-1 rounded transition-colors ${
+                    isPinned
+                      ? "text-blue-400 bg-blue-500/20"
+                      : "text-slate-400 hover:text-blue-400"
+                  }`}
+                  title={isPinned ? "Unpin sidebar" : "Pin sidebar"}
+                >
+                  <Target className="w-4 h-4" />
+                </button>
+              )}
+              {isMobile && (
+                <button
+                  onClick={() => dispatch(closeSidebar())}
+                  className="text-slate-400 hover:text-white p-1 rounded"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              )}
+            </div>
 
-        <TeamDrawer />
+            <TeamDrawer />
+          </div>
+        ) : (
+          <div className="p-2.5">
+            <button
+              onClick={() => router.back()}
+              className="bg-[#1E2025] flex justify-between text-[#7E7F81] mt-2 text-[13px] hover:text-white items-center cursor-pointer px-1 rounded-[5px]"
+            >
+              <ChevronLeft className="w-5 h-5"> </ChevronLeft> Back to app
+            </button>
+
+            <div className="text-white p-3 text-[13px]">
+              {/* Header */}
+              <div className="text-gray-400 mb-1 p-1 font-medium">
+                Your teams
+              </div>
+
+              {/* Team List */}
+              <div className="space-y-2">
+                {teams.map((team) => {
+                  // Generate deterministic color
+                  const badgeColor = stc(team.slug || team.name);
+                  const textColor =
+                    getLuminance(badgeColor) > 0.5 ? "#000000" : "#FFFFFF";
+
+                  return (
+                    <div
+                      key={team._id}
+                      className="flex items-center gap-2 px-1 py-1 hover:bg-[#151619] rounded cursor-pointer transition-colors"
+                    >
+                      <div
+                        className="w-6 h-6 rounded flex items-center justify-center font-bold text-[13px] shadow"
+                        style={{
+                          backgroundColor: badgeColor,
+                          color: textColor,
+                        }}
+                      >
+                        {team.slug[0].toUpperCase()}
+                      </div>
+
+                      {/* Team Name */}
+                      <span className="font-medium text-[13px] capitalize">
+                        {team.name}
+                      </span>
+                    </div>
+                  );
+                })}
+
+                {/* Create New Team Button */}
+                <button
+                  onClick={() =>
+                    router.push(`/${currentWorkspace?.slug}/settings/new-team`)
+                  }
+                  className="flex items-center  gap-1 px-1 py-1 hover:bg-[#151619] rounded cursor-pointer text-blue-400 font-medium text-[13px] transition-colors"
+                >
+                  <Plus className="w-4 h-4" /> Create a Team
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
 };
 
-export default InnovativeSidebar;
+export default Sidebar;
