@@ -21,12 +21,12 @@ const WorkspaceDropdown: React.FC = () => {
   const { currentWorkspace, workspaces } = useSelector(
     (state: RootState) => state.workspace
   );
-  const { findMembershipById } = useMemberships();
+  const { findMembershipBySlug } = useMemberships();
 
   const handleWorkspaceSwitch = async (workspace: any) => {
     try {
       dispatch(setCurrentWorkspace(workspace));
-      const membership = findMembershipById(workspace._id);
+      const membership = findMembershipBySlug(workspace.slug);
       const targetPath = membership?.teams?.length
         ? `/${workspace.slug}/team/${membership.teams[0].slug}`
         : `/${workspace.slug}`;

@@ -20,6 +20,7 @@
     "react-dom": "18.2.0",
     "react-hook-form": "^7.43.9",
     "react-redux": "^9.2.0",
+    "sonner": "^2.0.7",
     "string-to-color": "^2.2.2",
     "zod": "^3.22.4"
   },

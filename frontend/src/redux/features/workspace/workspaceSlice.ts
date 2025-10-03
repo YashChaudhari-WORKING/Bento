@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { WorkspaceState } from "./workspaceTypes";
 import { Workspace, Membership } from "../auth/authTypes";
 import { createWorkspace } from "./workspaceThunks";
+
 const initialState: WorkspaceState = {
   workspaces: [],
   currentWorkspace: null,
@@ -22,7 +23,6 @@ const workspaceSlice = createSlice({
       state.workspaces = workspaces;
       state.memberships = action.payload;
 
-      // Set current workspace to first one if none selected
       if (!state.currentWorkspace && workspaces.length > 0) {
         state.currentWorkspace = workspaces[0];
       }
@@ -33,13 +33,36 @@ const workspaceSlice = createSlice({
       state.currentWorkspace = action.payload;
     },
 
-    // Add single workspace (for future API calls)
+    // Add new team to current workspace membership
+    addTeamToWorkspace: (
+      state,
+      action: PayloadAction<{
+        workspaceId: string;
+        team: { _id: string; name: string; slug: string; role: string };
+      }>
+    ) => {
+      const { workspaceId, team } = action.payload;
+      const membershipIndex = state.memberships.findIndex(
+        (m) => m.workspace._id === workspaceId
+      );
+
+      if (membershipIndex !== -1) {
+        // Check if team already exists
+        const teamExists = state.memberships[membershipIndex].teams.some(
+          (t) => t._id === team._id
+        );
+        if (!teamExists) {
+          state.memberships[membershipIndex].teams.push(team);
+        }
+      }
+    },
+
+    // Add single workspace
     addWorkspace: (
       state,
       action: PayloadAction<{ workspace: Workspace; membership: Membership }>
     ) => {
       const { workspace, membership } = action.payload;
-      // Check if workspace already exists
       const existingIndex = state.workspaces.findIndex(
         (w) => w._id === workspace._id
       );
@@ -57,7 +80,6 @@ const workspaceSlice = createSlice({
       if (index !== -1) {
         state.workspaces[index] = action.payload;
 
-        // Update current workspace if it's the one being updated
         if (state.currentWorkspace?._id === action.payload._id) {
           state.currentWorkspace = action.payload;
         }
@@ -73,7 +95,6 @@ const workspaceSlice = createSlice({
         (m) => m.workspace._id !== action.payload
       );
 
-      // Clear current workspace if it's the one being removed
       if (state.currentWorkspace?._id === action.payload) {
         state.currentWorkspace =
           state.workspaces.length > 0 ? state.workspaces[0] : null;
@@ -85,12 +106,10 @@ const workspaceSlice = createSlice({
       Object.assign(state, initialState);
     },
 
-    // Set loading state
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     },
 
-    // Set error
     setError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload;
     },
@@ -102,24 +121,19 @@ const workspaceSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      // highlight-start
       .addCase(createWorkspace.fulfilled, (state, action) => {
         state.loading = false;
-        // Destructure the full response from the payload
         const { workspace, team } = action.payload;
 
-        // 1. Add the new workspace to the list of all workspaces
         state.workspaces.push(workspace);
 
-        // 2. Construct the new membership object correctly
-        // This now matches the structure in your Redux state
         const newMembership = {
           workspace: {
             _id: workspace._id,
             name: workspace.name,
             slug: workspace.slug,
           },
-          role: "admin", // The creator is an admin of the workspace
+          role: "admin",
           teams: [
             {
               _id: team._id,
@@ -130,13 +144,9 @@ const workspaceSlice = createSlice({
           ],
         };
 
-        // This type assertion might be needed if your Membership type is slightly different
         state.memberships.push(newMembership as Membership);
-
-        // 3. Set the newly created workspace as the active one
         state.currentWorkspace = workspace;
       })
-      // highlight-end
       .addCase(createWorkspace.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload ?? "An unknown error occurred";
@@ -147,6 +157,7 @@ const workspaceSlice = createSlice({
 export const {
   setWorkspacesFromAuth,
   setCurrentWorkspace,
+  addTeamToWorkspace,
   addWorkspace,
   updateWorkspace,
   removeWorkspace,

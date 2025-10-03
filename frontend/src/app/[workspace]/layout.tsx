@@ -25,43 +25,22 @@ export default function WorkspaceLayout({
   const isSettingsPage = pathname.includes("/settings");
 
   useEffect(() => {
-    if (
-      !initialized ||
-      !workspaceSlug ||
-      workspaceSlug.startsWith(".") ||
-      workspaceSlug.includes("well-known")
-    ) {
-      return;
-    }
+    if (!initialized || !workspaceSlug) return;
 
-    try {
-      const currentMembership = findMembershipBySlug(workspaceSlug);
+    const currentMembership = findMembershipBySlug(workspaceSlug);
 
-      if (currentMembership) {
-        dispatch(setCurrentWorkspace(currentMembership.workspace));
-      } else {
-        console.warn(`No membership found for workspace: ${workspaceSlug}`);
-      }
-    } catch (error) {
-      console.error("Error setting current workspace:", error);
+    if (currentMembership) {
+      dispatch(setCurrentWorkspace(currentMembership.workspace));
     }
   }, [dispatch, findMembershipBySlug, workspaceSlug, initialized]);
 
-  // Don't render layout for system routes
-  if (
-    !workspaceSlug ||
-    workspaceSlug.startsWith(".") ||
-    workspaceSlug.includes("well-known")
-  ) {
-    return null;
-  }
+  if (!workspaceSlug) return null;
 
   return (
     <AuthProvider>
       <div className="relative min-h-screen">
         <Sidebar menuType={isSettingsPage ? "settings" : "default"} />
 
-        {/* Overlay for mobile when sidebar is open */}
         {isOpen && (
           <div
             className="fixed inset-0 bg-black/50 z-20 md:hidden"
@@ -69,7 +48,6 @@ export default function WorkspaceLayout({
           />
         )}
 
-        {/* Main content area */}
         <div
           className={`transition-all duration-300 ${
             isPinned ? "md:ml-64" : "ml-0"

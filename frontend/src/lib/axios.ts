@@ -5,4 +5,16 @@ const instance = axios.create({
   withCredentials: true,
 });
 
+export const teamAPI = {
+  createTeam: (data: {
+    name: string;
+    slug: string;
+    workspaceId: string;
+    description?: string;
+  }) => instance.post("/teams", data),
+
+  getTeams: (workspaceId: string) =>
+    instance.get("/teams", { params: { workspaceId } }),
+};
+
 export default instance;

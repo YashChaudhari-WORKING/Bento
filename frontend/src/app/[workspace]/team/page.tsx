@@ -1,4 +1,3 @@
-// app/[workspace]/page.tsx
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
@@ -6,12 +5,11 @@ import { useMemberships } from "@/hooks/useMemberships";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function TeamIndexPage() {
-  const { findMembershipBySlug, initialized } = useMemberships();
+  const { currentMembership, initialized } = useMemberships();
   const params = useParams();
   const router = useRouter();
   const workspaceSlug = params.workspace as string;
 
-  // Loading state
   if (!initialized) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -20,22 +18,8 @@ export default function TeamIndexPage() {
     );
   }
 
-  const currentMembership = findMembershipBySlug(workspaceSlug);
-
-  const handleGoToWorkspaceHome = () => {
-    try {
-      router.push(`/${workspaceSlug}`);
-    } catch (error) {
-      console.error("Navigation error:", error);
-    }
-  };
-
   const handleTeamSelect = (teamSlug: string) => {
-    try {
-      router.push(`/${workspaceSlug}/team/${teamSlug}`);
-    } catch (error) {
-      console.error("Team navigation error:", error);
-    }
+    router.push(`/${workspaceSlug}/team/${teamSlug}`);
   };
 
   return (
@@ -51,10 +35,6 @@ export default function TeamIndexPage() {
               <p className="text-gray-600 mb-4">
                 No membership found for this workspace.
               </p>
-              <p className="text-sm text-gray-500">
-                Please contact your administrator or check if you have access to
-                this workspace.
-              </p>
             </div>
           ) : !currentMembership.teams ||
             currentMembership.teams.length === 0 ? (
@@ -62,12 +42,6 @@ export default function TeamIndexPage() {
               <p className="text-gray-600 mb-4">
                 No teams available in this workspace.
               </p>
-              <button
-                onClick={handleGoToWorkspaceHome}
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-              >
-                Go to Workspace Home
-              </button>
             </div>
           ) : (
             <div>
@@ -79,11 +53,9 @@ export default function TeamIndexPage() {
                   <button
                     key={team._id}
                     onClick={() => handleTeamSelect(team.slug)}
-                    className="p-4 bg-white rounded-lg border border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-colors text-left group"
+                    className="p-4 bg-white rounded-lg border border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-colors text-left"
                   >
-                    <h3 className="font-medium text-gray-900 group-hover:text-blue-600">
-                      {team.name}
-                    </h3>
+                    <h3 className="font-medium text-gray-900">{team.name}</h3>
                     <p className="text-sm text-gray-500 mt-1 capitalize">
                       Role: {team.role}
                     </p>

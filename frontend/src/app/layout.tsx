@@ -5,7 +5,7 @@ import "./globals.css";
 import { Provider } from "react-redux";
 import store from "@/redux/store";
 import AuthProvider from "@/components/AuthProvider";
-
+import SonnerWrapper from "@/components/helpers/SonnerWrapper";
 export default function RootLayout({
   children,
 }: {
@@ -14,7 +14,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Provider store={store}>{children}</Provider>
+        <Provider store={store}>
+          {children} <SonnerWrapper />
+        </Provider>
       </body>
     </html>
   );

@@ -1,39 +1,48 @@
 // hooks/useMemberships.ts
-import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
-import { useMemo } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState, AppDispatch } from "@/redux/store";
+import { useMemo, useEffect } from "react";
+import { setTeams } from "@/redux/features/team/teamSlice";
 
-export const useMemberships = () => {
-  const { memberships: authMemberships, initialized } = useSelector(
-    (state: RootState) => state.auth
-  );
-  const { memberships: workspaceMemberships } = useSelector(
+export function useMemberships() {
+  const dispatch = useDispatch<AppDispatch>();
+  const { memberships, currentWorkspace } = useSelector(
     (state: RootState) => state.workspace
   );
+  const { user } = useSelector((state: RootState) => state.auth);
 
-  const allMemberships = useMemo(() => {
-    // Combine and deduplicate memberships by workspace ID
-    const combined = [...authMemberships];
-    workspaceMemberships.forEach((wm) => {
-      if (!combined.find((am) => am.workspace._id === wm.workspace._id)) {
-        combined.push(wm);
-      }
-    });
-    return combined;
-  }, [authMemberships, workspaceMemberships]);
+  const initialized = !!user;
 
-  const findMembershipBySlug = (slug: string) =>
-    allMemberships.find((m) => m.workspace.slug === slug);
+  const findMembershipBySlug = useMemo(() => {
+    return (workspaceSlug: string) => {
+      return memberships.find((m) => m.workspace.slug === workspaceSlug);
+    };
+  }, [memberships]);
 
-  const findMembershipById = (id: string) =>
-    allMemberships.find((m) => m.workspace._id === id);
+  const currentMembership = useMemo(() => {
+    if (!currentWorkspace) return null;
+    return memberships.find((m) => m.workspace._id === currentWorkspace._id);
+  }, [memberships, currentWorkspace]);
+
+  // Sync teams with team slice when workspace changes
+  useEffect(() => {
+    if (currentMembership?.teams) {
+      // Convert membership teams to full Team objects
+      const teams = currentMembership.teams.map((t) => ({
+        _id: t._id,
+        name: t.name,
+        slug: t.slug,
+        workspaceId: currentWorkspace!._id,
+        // Add other team properties as needed
+      }));
+      dispatch(setTeams(teams));
+    }
+  }, [currentMembership, currentWorkspace, dispatch]);
 
   return {
-    authMemberships,
-    workspaceMemberships,
-    allMemberships,
+    memberships,
+    currentMembership,
     findMembershipBySlug,
-    findMembershipById,
     initialized,
   };
-};
+}

@@ -9,7 +9,7 @@ const TeamSchema = new mongoose.Schema(
     slug: {
       type: String,
       required: true,
-      upppercase: true,
+      uppercase: true,
     },
     description: {
       type: String,
@@ -34,7 +34,7 @@ const TeamSchema = new mongoose.Schema(
         userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
         role: {
           type: String,
-          enum: ["admin", "member"],
+          enum: ["admin", "member", "guest"],
           default: "member",
         },
         joinedAt: {

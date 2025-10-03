@@ -19,10 +19,13 @@ app.use(
 //router import
 const auth = require("./routes/auth/auth.route");
 const workspace = require("./routes/workspace/workspace.route");
+const teams = require("./routes/teams/teamCurd.route");
 
 //router middleware
 app.use("/api/auth", auth);
 app.use("/api/workspace", workspace);
+app.use("/api/teams", teams);
+
 app.get("/", (req, res) => {
   res.send("Server is Up and RunnIng!  (-_-)");
 });
