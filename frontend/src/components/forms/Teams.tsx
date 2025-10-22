@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { AppDispatch } from "@/redux/store";
 import { selectCurrentWorkspaceTeams } from "@/redux/features/workspace/workspaceSelectors";
 import { selectCurrentWorkspace } from "@/redux/features/workspace/workspaceSelectors";
+import { addTeamToWorkspace } from "@/redux/features/workspace/workspaceSlice";
 import { createTeam } from "@/redux/features/team/teamThunks";
 
 const CreateTeamForm: React.FC = () => {
@@ -71,6 +72,18 @@ const CreateTeamForm: React.FC = () => {
           description: "",
         })
       ).unwrap();
+
+      dispatch(
+        addTeamToWorkspace({
+          workspaceId: currentWorkspace._id,
+          team: {
+            _id: result._id,
+            name: result.name,
+            slug: result.slug,
+            role: "admin",
+          },
+        })
+      );
 
       toast.success(`Team "${data.teamName}" created successfully!`);
       console.log(`/${currentWorkspace.slug}/team/${result.slug}`);
