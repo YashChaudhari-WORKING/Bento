@@ -6,6 +6,8 @@ const User = require("../../models/User");
 const issueController = {
   // Create new issue
   createIssue: async (req, res) => {
+    console.log(req.user.userId);
+
     try {
       const {
         title,
@@ -53,7 +55,9 @@ const issueController = {
         assigneeId: assigneeId || null,
         priority,
         status,
-        createdBy: req.user.id,
+        createdBy: req.user.userId,
+        identifier: "", // Temporary value
+        number: 0, // Temporary value
       });
 
       await issue.save();

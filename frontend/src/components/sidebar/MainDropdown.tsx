@@ -9,6 +9,7 @@ import type { AppDispatch } from "@/redux/store";
 import { useParams, useRouter } from "next/navigation";
 import { ChevronDown, ChevronsRight, Check, Plus } from "lucide-react";
 import { logout } from "@/redux/features/auth/authThunks";
+import { clearTeams, setTeams } from "@/redux/features/team/teamSlice";
 
 const WorkspaceDropdown: React.FC = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -25,12 +26,24 @@ const WorkspaceDropdown: React.FC = () => {
 
   const handleWorkspaceSwitch = async (workspace: any) => {
     try {
+      // 1. Update workspace
       dispatch(setCurrentWorkspace(workspace));
+
+      // 2. Clear old teams and set new ones
       const membership = findMembershipBySlug(workspace.slug);
+
+      if (membership?.teams) {
+        dispatch(setTeams(membership.teams)); // This sets teams and auto-sets first team as current
+      } else {
+        dispatch(clearTeams());
+      }
+
+      // 3. Navigate
       const targetPath = membership?.teams?.length
         ? `/${workspace.slug}/team/${membership.teams[0].slug}`
         : `/${workspace.slug}`;
       await router.push(targetPath);
+
       setIsOpen(false);
       setShowWorkspaces(false);
     } catch (error) {

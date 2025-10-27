@@ -1,27 +1,70 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Image from "next/image";
 import stringToColor from "string-to-color";
 import { getLuminance } from "polished";
 import { ChevronRight, ChevronDown } from "lucide-react";
-import { selectCurrentWorkspaceTeams } from "@/redux/features/workspace/workspaceSelectors";
+import {
+  selectCurrentWorkspaceTeams,
+  selectCurrentWorkspace,
+} from "@/redux/features/workspace/workspaceSelectors";
 
-// Default menu
+// Team menu - all direct links
 const teamMenu = [
-  { id: "issues", label: "Issues", icon: "/icon/issue.png" },
-  { id: "projects", label: "Projects", icon: "/icon/project.png" },
-  { id: "views", label: "Views", icon: "/icon/views.png" },
+  {
+    id: "issues",
+    label: "Issues",
+    icon: "/icon/issue.png",
+  },
+  {
+    id: "projects",
+    label: "Projects",
+    icon: "/icon/project.png",
+  },
+  {
+    id: "views",
+    label: "Views",
+    icon: "/icon/views.png",
+  },
 ];
 
 const TeamDrawer: React.FC = () => {
+  const router = useRouter();
   const teams = useSelector(selectCurrentWorkspaceTeams);
+  const workspace = useSelector(selectCurrentWorkspace);
+
   const [openTeams, setOpenTeams] = useState<string[]>([]);
+  const [openMenuItems, setOpenMenuItems] = useState<string[]>([]);
   const [showTeams, setShowTeams] = useState<boolean>(true);
 
   const toggleTeam = (id: string) => {
     setOpenTeams((prev) =>
       prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]
     );
+  };
+
+  const toggleMenuItem = (teamId: string, menuId: string) => {
+    const key = `${teamId}-${menuId}`;
+    setOpenMenuItems((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+    );
+  };
+
+  const generateUrl = (teamSlug: string, menuId: string) => {
+    if (!workspace?.slug) return "#";
+
+    // Issues always redirect to "all"
+    if (menuId === "issues") {
+      return `/${workspace.slug}/team/${teamSlug}/all`;
+    }
+
+    return `/${workspace.slug}/team/${teamSlug}/${menuId}`;
+  };
+
+  const isActiveRoute = (url: string) => {
+    return router.asPath === url;
   };
 
   return (
@@ -81,13 +124,18 @@ const TeamDrawer: React.FC = () => {
                   </div>
                 </button>
 
-                {/* Team Items */}
+                {/* Team Items - All Direct Links */}
                 {isOpen && (
                   <div className="ml-8 mt-1 space-y-1">
                     {teamMenu.map((item) => (
-                      <div
+                      <Link
                         key={item.id}
-                        className="flex items-center gap-2 px-2 py-1 hover:bg-[#151619] rounded cursor-pointer transition-colors"
+                        href={generateUrl(team.slug, item.id)}
+                        className={`flex items-center gap-2 px-2 py-1 hover:bg-[#151619] rounded transition-colors ${
+                          isActiveRoute(generateUrl(team.slug, item.id))
+                            ? "bg-[#151619] text-blue-400"
+                            : ""
+                        }`}
                       >
                         <Image
                           src={item.icon}
@@ -99,7 +147,7 @@ const TeamDrawer: React.FC = () => {
                         <span className="text-[13px] text-white">
                           {item.label}
                         </span>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 )}

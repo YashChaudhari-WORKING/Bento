@@ -10,7 +10,7 @@ import { closeSidebar } from "@/redux/features/layout/sidebarSlice";
 import AuthProvider from "@/components/AuthProvider";
 import Sidebar from "@/components/layout/Sidebar";
 import { useMemberships } from "@/hooks/useMemberships";
-
+import CreateIssueModal from "@/components/issues/CreateIssueModal";
 export default function WorkspaceLayout({
   children,
 }: {
@@ -56,6 +56,8 @@ export default function WorkspaceLayout({
           <main className="min-h-screen">{children}</main>
         </div>
       </div>
+
+      <CreateIssueModal />
     </AuthProvider>
   );
 }

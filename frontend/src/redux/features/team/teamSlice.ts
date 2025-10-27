@@ -21,9 +21,8 @@ const teamSlice = createSlice({
     // Set teams for current workspace
     setTeams: (state, action: PayloadAction<Team[]>) => {
       state.teams = action.payload;
-      if (!state.currentTeam && action.payload.length > 0) {
-        state.currentTeam = action.payload[0];
-      }
+      // Always set the first team as current when teams change
+      state.currentTeam = action.payload.length > 0 ? action.payload[0] : null;
     },
 
     // Clear teams (when switching workspace)

@@ -13,7 +13,7 @@ import WorkspaceDropdown from "../sidebar/MainDropdown";
 import TeamDrawer from "../sidebar/TeamDrawer";
 import { useRouter } from "next/navigation";
 import { selectCurrentWorkspaceTeams } from "@/redux/features/workspace/workspaceSelectors";
-
+import { openCreateModal } from "@/redux/features/issue/issueSlice";
 import { getLuminance } from "polished";
 import stc from "string-to-color";
 interface sidebarProps {
@@ -141,6 +141,9 @@ const Sidebar: React.FC<sidebarProps> = ({ menuType }) => {
               <div className="flex items-center space-x-2">
                 <WorkspaceDropdown />
               </div>
+
+              <button onClick={() => dispatch(openCreateModal())}>Issue</button>
+
               {!isMobile && (
                 <button
                   onClick={() => dispatch(togglePin())}

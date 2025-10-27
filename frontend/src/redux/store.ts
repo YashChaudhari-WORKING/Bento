@@ -3,12 +3,14 @@ import authReducer from "./features/auth/authSlice";
 import workspaceReducer from "./features/workspace/workspaceSlice";
 import sidebarReducer from "./features/layout/sidebarSlice";
 import teamReducer from "./features/team/teamSlice";
+import issuesReducer from "./features/issue/issueSlice";
 const store = configureStore({
   reducer: {
     auth: authReducer,
     workspace: workspaceReducer,
     sidebar: sidebarReducer,
     team: teamReducer,
+    issues: issuesReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

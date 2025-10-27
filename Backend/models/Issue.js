@@ -16,12 +16,11 @@ const IssueSchema = new mongoose.Schema(
     // Auto-generated identifier (TEAM-123)
     identifier: {
       type: String,
-      required: true,
+
       unique: true,
     },
     number: {
       type: Number,
-      required: true,
     },
 
     // Status and priority
